@@ -12,9 +12,7 @@ def load_gt_mat_to_lists(gt_dir):
     easy_mat = loadmat(op.join(gt_dir, 'wider_easy_val.mat'))
     medium_mat = loadmat(op.join(gt_dir, 'wider_medium_val.mat'))
     hard_mat = loadmat(op.join(gt_dir, 'wider_hard_val.mat'))
-    event_list_tmp = gt_mat['event_list']
-    event_num = event_list_tmp.shape[0]
-    event_list = [event_list_tmp[_][0][0] for _ in range(event_num)]
+    event_list = [_[0][0] for _ in gt_mat['event_list']]
     file_list = []
     facebox_list = []
     easy_list = []
@@ -97,7 +95,7 @@ def boxoverlap(boxlist, box):
     w = x2 - x1 + 1
     h = y2 - y1 + 1
     overlap = np.zeros(boxlist.shape[0])
-    valid = (w>=0) * (h>=0)
+    valid = (w >= 0) * (h >= 0)
     inter = w[valid] * h[valid]
     aarea = (boxlist[valid,2] - boxlist[valid,0] + 1) * (boxlist[valid,3] - boxlist[valid,1] + 1)
     barea = (box[2] - box[0] + 1) * (box[3] - box[1] + 1)
@@ -150,15 +148,13 @@ def image_pr_info(thresh_num, pred_info, proposal_list, pred_recall):
             # this helps to speed up evaluation. 
             img_pr_info[t,0] = img_pr_info[t-1, 0]
             img_pr_info[t,1] = img_pr_info[t-1, 1]
-
     return img_pr_info
 
 
 def dataset_pr_info(thresh_num, org_pr_curve, count_face):
     pr_curve = np.zeros([thresh_num, 2])
-    for i in range(thresh_num):
-        pr_curve[i,0] = org_pr_curve[i,1] / org_pr_curve[i,0]
-        pr_curve[i,1] = org_pr_curve[i,1] / count_face
+    pr_curve[:,0] = org_pr_curve[:,1] / org_pr_curve[:,0]
+    pr_curve[:,1] = org_pr_curve[:,1] / count_face
     return pr_curve
 
 
@@ -167,7 +163,6 @@ def calc_ap(rec, prec):
     mpre = np.concatenate(([0.], prec, [0.]))
     for i in range(mpre.size-1, 0, -1):
         mpre[i-1] = max(mpre[i-1], mpre[i])
-
     i = np.where(mrec[1:] != mrec[:-1])[0]
     ap = np.sum((mrec[i+1] - mrec[i]) * mpre[i+1])
     return ap
