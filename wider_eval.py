@@ -1,3 +1,5 @@
+# Written by Xi Yin @ Microsoft
+# Apr. 29, 2019
 import os
 import os.path as op
 import numpy as np
@@ -253,6 +255,7 @@ if __name__ == "__main__":
     """
     This evaluation script follows the exact logic from the official 
     evaluation tools in order to reproduce the same results.  
+    There are minor changes in several places to speed up evaluation.
     """
     start = time.time()
     args = parse_args()
