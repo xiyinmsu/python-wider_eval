@@ -3,7 +3,7 @@
 import os
 import os.path as op
 import numpy as np
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 import argparse
 import time
 import pdb
@@ -203,9 +203,22 @@ def evaluation(norm_pred_list, facebox_list, set_gt_list,
             if len(img_pr_info) != 0:
                 org_pr_curve += img_pr_info
 
-    pr_curve = dataset_pr_info(thresh_num, org_pr_curve, count_face)
-    ap = calc_ap(pr_curve[:,1], pr_curve[:,0])
-    return pr_curve, ap
+    pr_curve = dataset_pr_info(thresh_num, org_pr_curve, count_face)   
+    # save pr_curve results for plot.
+    # use the official scripts for figure plotting.
+    # note the typo in MATLAB scripts (pr_cruve).
+    res = {
+            'legend_name': method,
+            'pr_cruve': pr_curve
+          }
+    method_path = op.join('eval_tools/plot/baselines/Val/', setting_class, method)
+    if not op.isdir(method_path):
+        os.mkdir(method_path)
+
+    save_file = op.join(method_path, 'wider_pr_info_{}_{}.mat'.format(method, set_name))
+    savemat(save_file, res)
+
+    return pr_curve
 
 
 def wider_eval(gt_dir, pred_dir, method, settings):
@@ -224,15 +237,16 @@ def wider_eval(gt_dir, pred_dir, method, settings):
     for i, set_name in enumerate(setting_name_list):
         print("Current evaluation setting {}".format(set_name))
         set_gt_list = set_gt_lists[i]
-        pr_curve, ap = evaluation(norm_pred_list, facebox_list, set_gt_list,
+        pr_curve = evaluation(norm_pred_list, facebox_list, set_gt_list,
                    set_name, setting_class, method, settings)
+        ap = calc_ap(pr_curve[:,1], pr_curve[:,0])
         setting_aps.append(ap)
     
-    print("=============== AP Results ==============")
-    print("Val: Easy   AP = {}".format(setting_aps[0]))
-    print("Val: Medium AP = {}".format(setting_aps[1]))
-    print("Val: Hard   AP = {}".format(setting_aps[2]))
-    print("=========================================")
+    print("==================== AP Results ===================")
+    print("{} on {}: Easy   AP = {}".format(method, dataset_class, setting_aps[0]))
+    print("{} on {}: Medium AP = {}".format(method, dataset_class, setting_aps[1]))
+    print("{} on {}: Hard   AP = {}".format(method, dataset_class, setting_aps[2]))
+    print("===================================================")
 
 
 def parse_args():
