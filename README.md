@@ -24,8 +24,10 @@ rm eval_tools.zip
 Save the prediction results inside `eval_tools/pred/` follow the required format. 
 And then run the following command for evaluation. 
 You can also change the ground truth and prediction file paths if they are not the default ones. 
+There is an optional parameter to select prediction results with confidence larger than a pre-defined threshold (`-s`).
+For example, ths following command will only select results with confidence larger than 0.1 for evaluation.
 ```bash
-python wider_eval.py
+python wider_eval.py -s 0.1
 ```
  
 

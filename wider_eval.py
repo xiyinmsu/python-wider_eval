@@ -40,7 +40,10 @@ def load_gt_mat_to_lists(gt_dir):
     return event_list, file_list, facebox_list, set_gt_lists
 
 
-def read_pred(pred_dir, event_list, file_list):
+def read_pred(pred_dir, event_list, file_list, score_thresh=0.0):
+    # support to specify a minimum threshold to select detection
+    # results with confidence larger than score_thresh for 
+    # evaluation. 
     event_num = len(event_list)
     pred_list = []
     for i in range(event_num):
@@ -60,7 +63,8 @@ def read_pred(pred_dir, event_list, file_list):
                 bbx = []
                 for k in range(bbx_num):
                     raw_info = lines[k+2].strip().split(',')
-                    bbx.append([float(_) for _ in raw_info])
+                    if float(raw_info[-1]) >= score_thresh:
+                        bbx.append([float(_) for _ in raw_info])
                 # sort the box in each image in desending order of confidence
                 bbx = sorted(bbx, key=lambda x:-x[-1])
                 box_list.append(np.array(bbx))
@@ -221,7 +225,7 @@ def evaluation(norm_pred_list, facebox_list, set_gt_list,
     return pr_curve
 
 
-def wider_eval(gt_dir, pred_dir, method, settings):
+def wider_eval(gt_dir, pred_dir, method, settings, score_thresh=0.0):
     setting_name_list = settings['setting_name_list']
     setting_class = settings['setting_class']
     dataset_class = settings['dataset_class']
@@ -229,7 +233,7 @@ def wider_eval(gt_dir, pred_dir, method, settings):
     # load gt mat files to list representations
     event_list, file_list, facebox_list, set_gt_lists = load_gt_mat_to_lists(gt_dir)
     # load prediction text file
-    pred_list = read_pred(pred_dir, event_list, file_list)
+    pred_list = read_pred(pred_dir, event_list, file_list, score_thresh)
     # score normalization
     norm_pred_list = norm_score(pred_list)
 
@@ -261,6 +265,9 @@ def parse_args():
     parser.add_argument('-m', '--method_name', required=False, type=str,
                         default='Ours',
                         help='method name, default=Ours')
+    parser.add_argument('-s', '--score_thresh', required=False, type=float,
+                        default=0.0, 
+                        help='min threshold to select detection results')
     args = parser.parse_args()
     return args
 
@@ -280,7 +287,7 @@ if __name__ == "__main__":
         'IoU_thresh': 0.5,
         'thresh_num': 1000
         }
-    wider_eval(args.gt_dir, args.pred_dir, args.method_name, settings)
+    wider_eval(args.gt_dir, args.pred_dir, args.method_name, settings, args.score_thresh)
     end = time.time()
     print("Elapsed time: {}".format(end - start))
 
