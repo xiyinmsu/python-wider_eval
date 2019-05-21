@@ -246,6 +246,13 @@ def wider_eval(gt_dir, pred_dir, method, settings, score_thresh=0.0):
         ap = calc_ap(pr_curve[:,1], pr_curve[:,0])
         setting_aps.append(ap)
     
+    # save results to txt for future reference
+    with open('results.txt', 'w') as f:
+        f.write("AP\n")
+        f.write("Easy: {}\n".format(setting_aps[0]))
+        f.write("Medium: {}\n".format(setting_aps[1]))
+        f.write("Hard: {}\n".format(setting_aps[2]))
+
     print("==================== AP Results ===================")
     print("{} on {}: Easy   AP = {}".format(method, dataset_class, setting_aps[0]))
     print("{} on {}: Medium AP = {}".format(method, dataset_class, setting_aps[1]))
