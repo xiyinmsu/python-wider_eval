@@ -225,7 +225,7 @@ def evaluation(norm_pred_list, facebox_list, set_gt_list,
     return pr_curve
 
 
-def wider_eval(gt_dir, pred_dir, method, settings, score_thresh=0.0):
+def wider_eval(gt_dir, pred_dir, method, settings, score_thresh=0.0, save_file=None):
     setting_name_list = settings['setting_name_list']
     setting_class = settings['setting_class']
     dataset_class = settings['dataset_class']
@@ -247,7 +247,13 @@ def wider_eval(gt_dir, pred_dir, method, settings, score_thresh=0.0):
         setting_aps.append(ap)
     
     # save results to txt for future reference
-    with open('results.txt', 'w') as f:
+    if save_file is not None:
+        if op.isdir(save_file):
+            save_file = op.join(save_file, 'result.txt')
+    else:
+        save_file = 'result.txt'
+
+    with open(save_file, 'w') as f:
         f.write("AP\n")
         f.write("Easy: {}\n".format(setting_aps[0]))
         f.write("Medium: {}\n".format(setting_aps[1]))
@@ -275,6 +281,9 @@ def parse_args():
     parser.add_argument('-s', '--score_thresh', required=False, type=float,
                         default=0.0, 
                         help='min threshold to select detection results')
+    parser.add_argument('-f', '--save_file', required=False, type=str,
+                        default=None, 
+                        help='filename to save final mAP')
     args = parser.parse_args()
     return args
 
@@ -294,7 +303,8 @@ if __name__ == "__main__":
         'IoU_thresh': 0.5,
         'thresh_num': 1000
         }
-    wider_eval(args.gt_dir, args.pred_dir, args.method_name, settings, args.score_thresh)
+    wider_eval(args.gt_dir, args.pred_dir, args.method_name, settings, 
+            args.score_thresh, args.save_file)
     end = time.time()
     print("Elapsed time: {}".format(end - start))
 
