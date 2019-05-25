@@ -69,6 +69,7 @@ def read_pred(pred_dir, event_list, file_list, score_thresh=0.0):
                 bbx = sorted(bbx, key=lambda x:-x[-1])
                 box_list.append(np.array(bbx))
             except:
+                box_list.append([])
                 print("Invalid format of prediction file {}".format(pred_file))
         pred_list.append(box_list)
     return pred_list
